@@ -130,6 +130,12 @@ All `date` / `from` / `to` params are `YYYY-MM-DD`. `dev` filters by device ID, 
 
 ---
 
+## Public read-only API (`/api/v1`)
+
+The internal endpoints above were built for the dashboard's own UI. A separate, API-key-gated `/api/v1` surface exposes the same underlying attendance data for external consumers — Google Sheets via `IMPORTDATA`/Apps Script, Power Query, or any BI tool that can call a REST endpoint — without giving them access to the dashboard itself or a database connection string. Self-serve docs live at `/api/docs`, so a new consumer (a manager wiring up their own spreadsheet, say) doesn't need to ask the builder how to call it. Keying the public surface separately from the internal one means the internal endpoints can change shape freely without breaking anything external that depends on them.
+
+---
+
 ## Business rules
 
 | Rule | Value |
