@@ -136,6 +136,24 @@ The internal endpoints above were built for the dashboard's own UI. A separate, 
 
 ---
 
+## Store-only punch log for the CCTV verification team
+
+The CCTV team verifies store staff attendance against camera footage, so they need every individual punch for every store, to the second. They should **never** see head-office staff.
+
+**A separate app, not a page in the main dashboard.** The obvious build is a new tab behind the existing login. It was deliberately made a separate application instead, so head-office data has no route to leak through: the store app filters out head-office locations at the API layer, and a request naming a head-office location is rejected outright rather than returning an empty result.
+
+**View only.** The first version let operators mark punches as checked or mismatched. That was removed at the business owner's request. The team's job is to look, not to edit records, so the server has two read-only endpoints and nothing that writes.
+
+**The flow:** pick a store → pick a day → see the full punch log for that store (grouped by employee with every tap, or as one timeline) → click any employee for their own day: each punch, the gap since the previous one, first/last/repeat taps. CSV export for a store-day or one person.
+
+**A real data problem it surfaced.** At one store, the same people appeared twice in one day: in the morning the machine recorded short codes like `0633`, after a mid-day re-enrolment it recorded `JJ0633`. Same person, two identities, never overlapping in time. The store log resolves an unknown short code to the matching registered employee at the **same store** and labels it *"also as 0633"* rather than silently merging, so the CCTV team sees one person and can still see why.
+
+**Packaging for non-technical operators.** Each operator runs the tool on their own PC. The first package carried a `node_modules` folder of ~9,800 files, which broke on Windows extraction (the 260-character path limit). The fix was to **bundle the server into a single file with esbuild** and ship a portable runtime, a start script and a desktop-shortcut script: unzip, double-click, and the browser opens. On start it prints whether it can reach the attendance database, so "it doesn't work" turns into a specific message.
+
+**Verified against the source**: every store's punch count matched an independent query on the attendance database, on a day with ~950 punches across 16 stores.
+
+---
+
 ## Business rules
 
 | Rule | Value |
